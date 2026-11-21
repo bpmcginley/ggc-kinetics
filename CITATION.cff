@@ -2,6 +2,7 @@ cff-version: 1.2.0
 message: "If you use ggc-kinetics, please cite it as below."
 title: "ggc-kinetics: exact enzyme progress-curve solvers, detection statistics and a plate-reader parser"
 version: 0.2.0
+doi: 10.5281/zenodo.24409789
 date-released: "2026-11-20"
 license: MIT
 type: software
