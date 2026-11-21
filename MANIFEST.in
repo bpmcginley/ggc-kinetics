@@ -1,5 +1,5 @@
 include RELEASE_CHECKLIST.md
-include README.md LICENSE ATTRIBUTION.md CITATION.cff
+include README.md LICENSE ATTRIBUTION.md CITATION.cff CONTRIBUTING.md CHANGELOG.md
 recursive-include tests *.py *.csv *.tsv *.json
 recursive-include examples *.py
 recursive-include app *.py

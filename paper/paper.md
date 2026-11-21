@@ -47,7 +47,24 @@ against a reference integrator, and (iii) says plainly which of its decision thr
 data. `ggc-kinetics` is aimed at enzymologists and assay developers who script their analysis in Python and want a
 fast, checkable forward model and a parser that fails with an error code, not a silent wrong number.
 
-# Key capabilities and architecture
+# State of the field
+
+General kinetic-modelling programs such as DynaFit [@kuzmic1996dynafit] and KinTek Explorer fit arbitrary
+mechanisms by numerical integration; they are powerful but are separate applications, not Python libraries, and
+leave the choice and checking of the integrator to the user. ICEKAT [@olp2020icekat] is a web tool for initial
+rates, not whole curves. Closed forms exist in the literature for single cases [@schnell1997closed;
+@golicnik2020pon1] but are scattered across papers. General Python fitting tools (SciPy's `curve_fit` or ODE
+solvers [@virtanen2020scipy]) supply the machinery but no enzyme-specific rate laws, plate parsing or detection
+rules.
+
+*Build versus contribute.* The solvers depend only on NumPy and SciPy and use `scipy.special.lambertw` rather than
+re-implementing it. A new package was still needed because none of the tools above combines (i) exact forward
+models for these extensions, (ii) a stated error bound for each against a reference integrator, and (iii) frozen,
+evidence-tagged decision thresholds; adding (iii) to a general fitting library would impose a policy that does not
+belong there. The parser is self-contained because plate-reader exports vary by vendor and need explicit error
+codes.
+
+# Software design
 
 The package has four modules.
 
@@ -70,56 +87,58 @@ The package has four modules.
 All functions are copied without changes to their mathematics from a 66-cycle research archive. A parity script
 checks the release against the archive: 20 of 20 checks pass, most with a difference of exactly 0.
 
+Three design choices shape the package. First, **forward models without a general ODE integrator**: closed forms
+or split-step solutions are fast inside a least-squares loop and have no step-size setting to get wrong; the cost is
+that each rate law is a separate function, and each one is checked against fourth-order Runge-Kutta. Second,
+**frozen decision rules**: thresholds are fixed constants copied from the archive, and new behaviour is opt-in
+(for example `dispersion_guard`), so results from an older version stay reproducible. Third, **errors as data**:
+the parser returns an error code inside the report instead of raising, so a batch run over many plates never stops
+on one bad file and never returns a silent wrong number.
+
 # Verification and real-data benchmarks
 
 **Numerical verification (MEASURED numerics on MODELED inputs).** The Morrison solver agrees with fourth-order
-Runge-Kutta to 2.5e-9 with residual 6.2e-15; the coupled-lag form to below 1e-11; slow binding to below 1e-8. The
-substrate-inhibition Jacobian matches finite differences to 5.3e-10 (gate 1e-6), and the solver residual is at most
-4.5e-14 over 600 simulated plates (gate 1e-8). The 18 unit tests run in about 2 s, and two runs give identical logs
-apart from timing.
+Runge-Kutta to 2.5e-9; the coupled-lag form to below 1e-11; slow binding to below 1e-8. The substrate-inhibition
+Jacobian matches finite differences to 5.3e-10, and its solver residual is at most 4.5e-14 over 600 simulated
+plates. The 18 unit tests run on Python 3.10 and 3.12 in CI.
 
 **Real data (MODELED fits of MEASURED data, no re-tuning).** On the 1913 invertase data
-[@michaelis2011translation], the frozen solver gives Km 16.52 mM (+0.11% against the reference) and prefers product
-inhibition over enzyme decay by dBIC -19.29. The published paraoxonase-1 comparison [@golicnik2020pon1], in which
-a Lambert-W fit stays within 0.69% of an ODE fit and DynaFit deviates by up to 17.2%, is pinned in the tests as
-MEASURED reference values (published numbers, not refitted here). In a pre-registered
-release benchmark on ICEKAT supplementary files [@olp2020icekat] and horseradish-peroxidase source data
-[@kont2020lpmo], 3 of 5 gates passed. The parse, the peroxidase Km comparison (10 of 12 series within 10% of the
-authors' values) and the runtime gates passed. Two gates failed: an exact-identity check between two copies of one
-file (one cell missing, others equal to 2.2e-16), and a residual gate of 1e-8, which reached 3.6e-7 at a point
-where only 2e-9 of the substrate remains. The second failure is a conditioning effect at deep depletion; the gate was
-not changed after the fact.
+[@michaelis2011translation] the frozen solver gives Km 16.52 mM (+0.11% against the reference) and prefers product
+inhibition over enzyme decay by dBIC -19.29. Published paraoxonase-1 values [@golicnik2020pon1] are pinned in the
+tests. A pre-registered benchmark on ICEKAT files [@olp2020icekat] and peroxidase data [@kont2020lpmo] passed 3 of
+5 gates; the two failures (one missing cell, and a residual of 3.6e-7 at deep substrate depletion) are reported, not
+re-gated. On one real, already-inspected laccase plate [@haussler2024darus] the curvature score separated enzyme
+rows (3.48 to 3.82) from no-enzyme rows (0.32 to 0.50) but did not reach the 4.60 threshold (2 of 3 gates). A
+second deposit [@ngubane2022darus] was too scattered to call one Km.
 
-On one real laccase plate [@haussler2024darus], which had already been inspected and is therefore not a fresh
-test, the plate-level curvature score separated the three enzyme rows (3.48 to 3.82) from the three no-enzyme rows
-(0.32 to 0.50). The controls stayed below the 4.60 threshold, but the enzyme rows did not reach it, so the
-pre-registered active-row gate failed (2 of 3 gates). On the same plate the noise-adaptive K59 variant (tau 0.056,
-threshold 1.768, both ASSUMED) did separate all three enzyme rows (2.26 to 2.61) from the three controls (0.045 to
-0.071); the verdict stays 2 of 3, and K59 still needs a fresh real plate. A second laccase deposit [@ngubane2022darus] gives replicate
-Km values too scattered (0.60 dex) to call one Km.
+**Limits.** All detector thresholds and the substrate-inhibition rule are ASSUMED values calibrated on MODELED
+plates; simulated studies (Q64, Q65) showed the rule needs a correct readout SD, which `dispersion_guard` or an
+estimated SD provides. None of these has passed a test on a fresh real plate: two pre-registered searches of 12
+public datasets found no plate with raw multi-level curves and matched blanks. The parser does not read `.xlsx`.
 
-**Noise scale of the substrate-inhibition rule (MODELED).** The rule treats the readout SD as known. Two
-pre-registered studies on fresh simulated plates from an independent mass-action model, with every threshold
-frozen, tested what happens when it is not. In Q64 a noise floor twice the nominal one raised the false-call rate
-to a Wilson 90% upper bound of 0.099, against a gate of 0.060. Q65 (7 arms of 450 plates) confirmed the failure:
-the nominal SD gave 0.034 at the nominal floor, 0.076 at 2x and 0.131 at 3x. Two fixes passed every arm without
-re-tuning. V1 passes an SD estimated from blank reads (w90 at most 0.037, recall 0.991 and 0.982), but its 2%
-proportional noise term is ASSUMED and matches the generator, which favours it. V2, the Birge guard now shipped
-as `dispersion_guard=True`, needs no blanks; its worst arm, the 2x floor, sat close to the gate (w90 0.0555
-against 0.060). Neither fix has been tested on a real plate.
+# Research impact statement
 
-**Limits.** The detector thresholds (4.60 and 1.768 for the curvature score, 5.72 for the melt score) and the
-substrate-inhibition decision rule are ASSUMED values calibrated on MODELED plates. The substrate-inhibition rule is
-valid in simulation only for peak absorbance up to 2.0 and pipetting CV up to 5%. The Morrison solver needs the
-enzyme concentration to within 10%. None of these has yet passed a test on a fresh real plate: two pre-registered searches screened 12 public
-datasets for a fresh plate with raw multi-level progress curves and matched blanks, and none qualified, so K59
-remains unvalidated on fresh real data. The parser does not
-read `.xlsx` files. These limits are listed in the README and close only when a fresh, openly licensed real plate
-with several substrate levels and blank rows passes the pre-registered gates.
+`ggc-kinetics` was extracted from the author's own GGC-inf research archive (66 analysis cycles), where these
+solvers and detectors were used for every progress-curve fit and simulated-plate study, and it is the analysis code
+behind the real-data benchmarks described above. It is released with tests, CI, a command-line tool and an archived
+DOI so that others can reuse it. There are, as yet, no external users or publications that cite it.
+**TODO (author): before submitting, add concrete evidence of research use (a preprint, poster, lab or course using
+the package), as JOSS requires.**
+
+# AI usage disclosure
+
+**TODO (author): complete and confirm this statement; JOSS treats an incomplete disclosure as an ethical breach.**
+Claude Opus 5.5 (Anthropic), through Claude Code, was used during the v0.2.0 release for packaging and CI set-up,
+for adjusting floating-point tolerances in the tests, for copy-editing the README and changelog, and for drafting
+the State of the field, Software design, Research impact and AI usage sections of this paper.
+**TODO (author): list any other tools and versions used in the GGC-inf research archive (code generation,
+refactoring, test scaffolding, review) and where.** The author reviewed, edited and validated all AI-assisted
+output and made the core design decisions. **TODO (author): confirm this sentence is accurate.**
 
 # Acknowledgements
 
 We thank the authors of the openly licensed datasets used in the benchmarks. The package builds on NumPy
-[@harris2020numpy] and SciPy [@virtanen2020scipy].
+[@harris2020numpy] and SciPy [@virtanen2020scipy]. **TODO (author): state funding sources, or that the work
+received no specific funding, and any conflicts of interest.**
 
 # References

@@ -81,6 +81,12 @@ Neither fix has been checked on a real plate.
   Chrome (20 November 2026): upload of the healthy plate, MODELED, scale 0.05, offset 0.040; title, report and trace
   plot rendered.
 
+## Support and contributing
+
+Questions and bug reports go to the [issue tracker](https://github.com/bpmcginley/ggc-kinetics/issues). The package is
+maintained by one person on a best-effort basis; see `CONTRIBUTING.md` for how to report a problem, the project rules
+and support expectations, and `CHANGELOG.md` for what changed in each version.
+
 Cite v0.2.0 as DOI [10.5281/zenodo.24409789](https://doi.org/10.5281/zenodo.24409789) (Zenodo); see `CITATION.cff`.
 
 MIT licence. Data sources: `ATTRIBUTION.md`.
