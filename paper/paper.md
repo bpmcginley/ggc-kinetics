@@ -9,7 +9,7 @@ tags:
   - plate reader
 authors:
   - name: Bruce McGinley
-    orcid: 0000-0000-0000-0000
+    orcid: 0009-0001-9263-6174
     affiliation: 1
 affiliations:
   - name: University of Massachusetts Amherst
