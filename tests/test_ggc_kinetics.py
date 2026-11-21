@@ -159,13 +159,17 @@ class TestK57DispersionGuard(unittest.TestCase):
         with open(os.path.join(DATA, "k57_guard_ref.json"), encoding="utf-8") as fh:
             cls.ref = json.load(fh)
 
-    def test_guard_off_is_v010_bit_identical(self):
+    # Float tolerance: the reference was made on Windows; Linux numpy/scipy differ around the 14th digit (seen in CI,
+    # relative ~5e-12). Numbers are compared to rtol 1e-10; the called flags stay exact.
+    RTOL = 1e-10
+
+    def test_guard_off_matches_v010(self):
         for tag, B, mode in (("pkg_k57_guard_null", 6, 0), ("pkg_k57_guard_pos", 4, 1)):
             Y = gen_k57(tag, B, mode)[0]
             s0n = np.broadcast_to(S0_NOM[None, :], (B, 11)).copy()
             for r in (gk.k57_map_fit(Y, s0n, T_GRID, SIG), gk.k57_map_fit(Y, s0n, T_GRID, SIG, dispersion_guard=False)):
                 for k in ("dbic", "iksi", "km"):
-                    self.assertEqual([float(x) for x in r[k]], self.ref["v010"][tag][k], (tag, k))
+                    np.testing.assert_allclose(r[k], self.ref["v010"][tag][k], rtol=self.RTOL, atol=0, err_msg=f"{tag} {k}")
                 self.assertEqual([bool(x) for x in r["called"]], self.ref["v010"][tag]["called"])
                 self.assertTrue(np.array_equal(r["birge"], np.ones(B)))
 
@@ -176,9 +180,9 @@ class TestK57DispersionGuard(unittest.TestCase):
         nom = np.broadcast_to(s0[None, :], Y.shape[:2]).copy()
         sig = 0.015 * np.maximum(s0, 0.5)                       # Q65 nominal SIG (ASSUMED)
         r = gk.k57_map_fit(Y, nom, np.linspace(0.0, 10.0, 13), sig, dispersion_guard=True)
-        np.testing.assert_allclose(r["birge"], q["birge"], rtol=0, atol=1e-12)
+        np.testing.assert_allclose(r["birge"], q["birge"], rtol=self.RTOL, atol=0)
         self.assertTrue(np.all(r["birge"] > 1.0))              # 3x noise floor (MODELED)
-        np.testing.assert_allclose(r["dbic"], q["v2"]["dbic"], rtol=0, atol=1e-9)
+        np.testing.assert_allclose(r["dbic"], q["v2"]["dbic"], rtol=self.RTOL, atol=1e-9)
         self.assertEqual([bool(x) for x in r["called"]], q["v2"]["called"])
         self.assertTrue(any(q["row0"]["called"]))              # Row 0 false calls exist on these plates ...
         self.assertFalse(any(bool(x) for x in r["called"]))    # ... and the guard suppresses them

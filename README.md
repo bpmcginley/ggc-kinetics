@@ -59,7 +59,8 @@ Two ways to fix the noise scale, neither of which re-tunes a threshold:
    `birge > 1` is refitted at `sig * birge`. The result carries `"birge"` (all 1.0 when the guard is off). In Q65
    (variant V2) this passed every arm, but with a thin margin at the 2x floor: w90 0.0555 against the 0.060 gate
    (MODELED). The guard is one-sided: it never shrinks `sig`. The default `dispersion_guard=False` gives output
-   bit-identical to 0.1.0.
+   bit-identical to 0.1.0 on the same platform (checked on Windows); across operating systems the last 2-3 digits
+   can differ, so the test suite compares to a relative 1e-10.
 
 Neither fix has been checked on a real plate.
 
