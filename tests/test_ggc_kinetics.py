@@ -162,6 +162,8 @@ class TestK57DispersionGuard(unittest.TestCase):
     # Float tolerance: the reference was made on Windows; Linux numpy/scipy differ around the 14th digit (seen in CI,
     # relative ~5e-12). Numbers are compared to rtol 1e-10; the called flags stay exact.
     RTOL = 1e-10
+    # Fitted iksi / km near 0 sit on a flat objective; platforms stop up to ~3e-9 apart (CI). Absolute 1e-8.
+    ATOL_FIT = 1e-8
 
     def test_guard_off_matches_v010(self):
         for tag, B, mode in (("pkg_k57_guard_null", 6, 0), ("pkg_k57_guard_pos", 4, 1)):
@@ -169,7 +171,8 @@ class TestK57DispersionGuard(unittest.TestCase):
             s0n = np.broadcast_to(S0_NOM[None, :], (B, 11)).copy()
             for r in (gk.k57_map_fit(Y, s0n, T_GRID, SIG), gk.k57_map_fit(Y, s0n, T_GRID, SIG, dispersion_guard=False)):
                 for k in ("dbic", "iksi", "km"):
-                    np.testing.assert_allclose(r[k], self.ref["v010"][tag][k], rtol=self.RTOL, atol=0, err_msg=f"{tag} {k}")
+                    atol = 0.0 if k == "dbic" else self.ATOL_FIT
+                    np.testing.assert_allclose(r[k], self.ref["v010"][tag][k], rtol=self.RTOL, atol=atol, err_msg=f"{tag} {k}")
                 self.assertEqual([bool(x) for x in r["called"]], self.ref["v010"][tag]["called"])
                 self.assertTrue(np.array_equal(r["birge"], np.ones(B)))
 
