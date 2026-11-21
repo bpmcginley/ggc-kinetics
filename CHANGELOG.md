@@ -7,6 +7,8 @@ All notable changes are listed here. Versions follow [semantic versioning](https
 - Added `CONTRIBUTING.md` (how to report problems, project rules, support expectations) and this changelog.
 - Added the author ORCID to `CITATION.cff` and `paper/paper.md`.
 - Paper: added State of the field, Software design, Research impact statement and AI usage disclosure sections.
+- Tests: fitted iksi and km in the guard-off comparison now use relative 1e-6 (an intermittent CI failure on
+  Python 3.10 showed a relative 1.6e-8 run-to-run difference). The called flags are still compared exactly.
 - CI: added a workflow that builds the paper PDF with the Open Journals draft action.
 
 ## 0.2.0 (2026-11-20)
