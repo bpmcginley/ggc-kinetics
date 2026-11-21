@@ -1,0 +1,8 @@
+include RELEASE_CHECKLIST.md
+include README.md LICENSE ATTRIBUTION.md CITATION.cff
+recursive-include tests *.py *.csv *.tsv *.json
+recursive-include examples *.py
+recursive-include app *.py
+recursive-include benchmarks *.md
+recursive-include paper *.md *.bib
+recursive-include .github *.yml

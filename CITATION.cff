@@ -1,0 +1,23 @@
+cff-version: 1.2.0
+message: "If you use ggc-kinetics, please cite it as below."
+title: "ggc-kinetics: exact enzyme progress-curve solvers, detection statistics and a plate-reader parser"
+version: 0.2.0
+date-released: "2026-11-20"
+license: MIT
+type: software
+repository-code: "https://github.com/bpmcginley/ggc-kinetics"
+authors:
+  - family-names: "McGinley"
+    given-names: "Bruce"
+    affiliation: "University of Massachusetts Amherst"
+    orcid: "https://orcid.org/0000-0000-0000-0000"
+keywords:
+  - enzyme kinetics
+  - progress curves
+  - Michaelis-Menten
+  - Lambert W
+  - plate reader
+abstract: >-
+  Closed-form and split-step solvers for enzyme progress curves (product inhibition, enzyme decay, coupled lag,
+  slow binding, tight binding, substrate inhibition), two detection statistics, and a parser for plate-reader
+  text exports. Detector thresholds are ASSUMED values calibrated on MODELED (simulated) plates only.

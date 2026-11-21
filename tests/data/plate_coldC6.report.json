@@ -1,0 +1,157 @@
+{
+  "assumptions": {
+    "C5": "parsed, not scored",
+    "columns": {
+      "C1": [
+        1,
+        2
+      ],
+      "C2": [
+        3
+      ],
+      "C3": [
+        4,
+        5
+      ],
+      "C4": [
+        6,
+        7
+      ],
+      "C5": [
+        8,
+        9
+      ],
+      "C6": [
+        10
+      ],
+      "C7a": [
+        11
+      ],
+      "C7b": [
+        12
+      ]
+    },
+    "mode": "substrate",
+    "norm_unit_uM": 50.0,
+    "offset_A": 0.04,
+    "p1_rep_lnratio_max": 0.277,
+    "p1_rule": "v2",
+    "row_S0_uM": [
+      12.5,
+      25.0,
+      50.0,
+      100.0,
+      200.0,
+      350.0,
+      550.0,
+      800.0
+    ],
+    "scale_A_per_norm": 0.05,
+    "t0": "first read",
+    "t_offset_s": 0.0,
+    "tag": "ASSUMED",
+    "z_threshold": 4.6
+  },
+  "input": {
+    "decimal_comma": false,
+    "delimiter": "tab",
+    "encoding": "utf-8",
+    "file": "plate_coldC6_long_tsv.tsv",
+    "layout": "long",
+    "sha256": "2699161c0c4dfcbfb3e37a52b7d0f3ad992a746c5f4816d34da093642cc4c1b4"
+  },
+  "qc": {
+    "bad_wells": [],
+    "empty_cells": 1,
+    "interpolated_cells": 3,
+    "missing_wells": [],
+    "n_reads": 13,
+    "non_numeric_tokens": {
+      "#SAT": 2
+    },
+    "t_end_min": 10.0,
+    "t_offset_s": 0.0,
+    "warnings": []
+  },
+  "schema": "ggc.plate_report/1",
+  "status": "OK",
+  "summary": {
+    "INCONCLUSIVE": [],
+    "KILL": [
+      "P3",
+      "P4"
+    ],
+    "PASS": [
+      "P1",
+      "P2",
+      "P5"
+    ]
+  },
+  "tests": {
+    "P1": {
+      "evidence": "MODELED",
+      "reason": null,
+      "rule": "C1 active (z >= 4.60), Km in [S0min/2, 2*S0max], Vmax off bound, replicate Km and Vmax/Km |ln ratio| <= 0.277 (rule v2)",
+      "values": {
+        "Km_rep_uM": [
+          115.27,
+          115.392
+        ],
+        "Km_uM": 115.266,
+        "Vmax_uM_per_min": 17.5807,
+        "kd_per_min": 0.0113781,
+        "kn_blank_per_min": 0.00865322,
+        "rep_Eff_lnratio": 0.0415836,
+        "rep_Km_lnratio": 0.0010572,
+        "z_c1": 5.50992
+      },
+      "verdict": "PASS"
+    },
+    "P2": {
+      "evidence": "MODELED",
+      "reason": null,
+      "rule": "IFE-calibrated C4 Km within 20% of C1 Km",
+      "values": {
+        "Km_c4_cal_uM": 101.049,
+        "Km_c4_uncal_uM": 33.3026,
+        "a_hat": 0.0633333,
+        "ife_triggered": true,
+        "lnratio_vs_C1": 0.131633
+      },
+      "verdict": "PASS"
+    },
+    "P3": {
+      "evidence": "MODELED",
+      "reason": null,
+      "rule": "kd(C6) - kd(C1) > 0.03 /min",
+      "values": {
+        "dkd": -0.0101664,
+        "kd_c1": 0.0113781,
+        "kd_c6": 0.00121171
+      },
+      "verdict": "KILL"
+    },
+    "P4": {
+      "evidence": "MODELED",
+      "reason": null,
+      "rule": "C3 Km within 15% of C1 Km after blank-only hydrolysis correction (KILL = hard blank falsified)",
+      "values": {
+        "Km_c3_uM": 147.051,
+        "bias_vs_C1": 0.27576
+      },
+      "verdict": "KILL"
+    },
+    "P5": {
+      "evidence": "MODELED",
+      "reason": null,
+      "rule": "z(C1) >= 4.60 and z(C7a) < 4.60 and z(C7b) < 4.60",
+      "values": {
+        "a_hat_c7b": 0.0316667,
+        "z_c1": 5.50992,
+        "z_c7a": 1.83703,
+        "z_c7b": 2.3625
+      },
+      "verdict": "PASS"
+    }
+  }
+}

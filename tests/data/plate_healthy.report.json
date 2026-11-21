@@ -1,0 +1,161 @@
+{
+  "assumptions": {
+    "C5": "parsed, not scored",
+    "columns": {
+      "C1": [
+        1,
+        2
+      ],
+      "C2": [
+        3
+      ],
+      "C3": [
+        4,
+        5
+      ],
+      "C4": [
+        6,
+        7
+      ],
+      "C5": [
+        8,
+        9
+      ],
+      "C6": [
+        10
+      ],
+      "C7a": [
+        11
+      ],
+      "C7b": [
+        12
+      ]
+    },
+    "mode": "substrate",
+    "norm_unit_uM": 50.0,
+    "offset_A": 0.04,
+    "p1_rep_lnratio_max": 0.277,
+    "p1_rule": "v2",
+    "row_S0_uM": [
+      12.5,
+      25.0,
+      50.0,
+      100.0,
+      200.0,
+      350.0,
+      550.0,
+      800.0
+    ],
+    "scale_A_per_norm": 0.05,
+    "t0": "first read",
+    "t_offset_s": 5.0,
+    "tag": "ASSUMED",
+    "z_threshold": 4.6
+  },
+  "input": {
+    "decimal_comma": false,
+    "delimiter": "comma",
+    "encoding": "utf-8-sig",
+    "file": "plate_healthy_biotek_wide.csv",
+    "layout": "wide",
+    "sha256": "b166d92c3ed907bfce11ce53cae2d32e12472b7440add7371885f6fe97c79ba9"
+  },
+  "qc": {
+    "bad_wells": [],
+    "empty_cells": 1,
+    "interpolated_cells": 3,
+    "missing_wells": [],
+    "n_reads": 13,
+    "non_numeric_tokens": {
+      "OVRFLW": 2
+    },
+    "t_end_min": 10.0,
+    "t_offset_s": 5.0,
+    "warnings": [
+      "1 further well table(s) after the first were ignored",
+      "first read at 5 s taken as t = 0 (ASSUMED)"
+    ]
+  },
+  "schema": "ggc.plate_report/1",
+  "status": "OK",
+  "summary": {
+    "INCONCLUSIVE": [
+      "P2",
+      "P3",
+      "P4"
+    ],
+    "KILL": [
+      "P1"
+    ],
+    "PASS": [
+      "P5"
+    ]
+  },
+  "tests": {
+    "P1": {
+      "evidence": "MODELED",
+      "reason": null,
+      "rule": "C1 active (z >= 4.60), Km in [S0min/2, 2*S0max], Vmax off bound, replicate Km and Vmax/Km |ln ratio| <= 0.277 (rule v2)",
+      "values": {
+        "Km_rep_uM": [
+          122.264,
+          90.1381
+        ],
+        "Km_uM": 104.388,
+        "Vmax_uM_per_min": 15.34,
+        "kd_per_min": 0.0022611,
+        "kn_blank_per_min": 0.00856066,
+        "rep_Eff_lnratio": 0.20963,
+        "rep_Km_lnratio": 0.304841,
+        "z_c1": 5.69744
+      },
+      "verdict": "KILL"
+    },
+    "P2": {
+      "evidence": "MODELED",
+      "reason": "P1 did not pass, so there is no valid C1 baseline",
+      "rule": "IFE-calibrated C4 Km within 20% of C1 Km",
+      "values": {
+        "Km_c4_cal_uM": 91.2418,
+        "Km_c4_uncal_uM": 34.6069,
+        "a_hat": 0.0616667,
+        "ife_triggered": true,
+        "lnratio_vs_C1": 0.1346
+      },
+      "verdict": "INCONCLUSIVE"
+    },
+    "P3": {
+      "evidence": "MODELED",
+      "reason": "P1 did not pass, so there is no valid C1 baseline",
+      "rule": "kd(C6) - kd(C1) > 0.03 /min",
+      "values": {
+        "dkd": 0.0681584,
+        "kd_c1": 0.0022611,
+        "kd_c6": 0.0704195
+      },
+      "verdict": "INCONCLUSIVE"
+    },
+    "P4": {
+      "evidence": "MODELED",
+      "reason": "P1 did not pass, so there is no valid C1 baseline",
+      "rule": "C3 Km within 15% of C1 Km after blank-only hydrolysis correction (KILL = hard blank falsified)",
+      "values": {
+        "Km_c3_uM": 141.566,
+        "bias_vs_C1": 0.356154
+      },
+      "verdict": "INCONCLUSIVE"
+    },
+    "P5": {
+      "evidence": "MODELED",
+      "reason": null,
+      "rule": "z(C1) >= 4.60 and z(C7a) < 4.60 and z(C7b) < 4.60",
+      "values": {
+        "a_hat_c7b": 0.03,
+        "z_c1": 5.69744,
+        "z_c7a": -3.32585,
+        "z_c7b": -1.47876
+      },
+      "verdict": "PASS"
+    }
+  }
+}
